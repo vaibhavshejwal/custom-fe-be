@@ -32,6 +32,7 @@ pipeline {
                 }
             }
         }
+
 	stage('Backend Setup') {
 	    steps {
 		dir('backend') {
@@ -41,6 +42,7 @@ pipeline {
 		}
 	    }
 	}
+
         stage('Archive Build') {
             steps {
                 archiveArtifacts artifacts: 'frontend/build/**', fingerprint: true
