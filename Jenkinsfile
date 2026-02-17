@@ -32,7 +32,15 @@ pipeline {
                 }
             }
         }
-
+	stage('Backend Setup') {
+	    steps {
+		dir('backend') {
+		    sh 'python3 --version'
+		    sh 'pip3 install -r requirements.txt'
+		    sh 'python3 -m py_compile app.py'
+		}
+	    }
+	}
         stage('Archive Build') {
             steps {
                 archiveArtifacts artifacts: 'frontend/build/**', fingerprint: true
