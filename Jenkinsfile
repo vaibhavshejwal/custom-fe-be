@@ -1,6 +1,12 @@
 pipeline {
     agent any
 
+    environment {
+        DOCKERHUB_CREDENTIALS = 'dockerhub-creds'
+        DOCKERHUB_REPO_FRONTEND = 'vaibhavshejwal/frontend-app'
+        DOCKERHUB_REPO_BACKEND = 'vaibhavshejwal/backend-app'
+    }
+
     stages {
 
         stage('Checkout') {
@@ -9,44 +15,32 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Build Frontend Image') {
             steps {
-                dir('frontend') {
-                    sh 'npm install'
+                script {
+                    docker.build("${DOCKERHUB_REPO_FRONTEND}:${BUILD_NUMBER}", "./frontend")
                 }
             }
         }
 
-        stage('Build') {
+        stage('Build Backend Image') {
             steps {
-                dir('frontend') {
-                    sh 'npm run build'
+                script {
+                    docker.build("${DOCKERHUB_REPO_BACKEND}:${BUILD_NUMBER}", "./backend")
                 }
             }
         }
 
-        stage('Verify Build Output') {
+        stage('Push Images') {
             steps {
-                dir('frontend') {
-                    sh 'ls -la build'
+                script {
+                    docker.withRegistry('', DOCKERHUB_CREDENTIALS) {
+                        docker.image("${DOCKERHUB_REPO_FRONTEND}:${BUILD_NUMBER}").push()
+                        docker.image("${DOCKERHUB_REPO_BACKEND}:${BUILD_NUMBER}").push()
+                    }
                 }
-            }
-        }
-
-	stage('Backend Setup') {
-	    steps {
-		dir('backend') {
-		    sh 'python3 --version'
-		    sh 'pip3 install -r requirements.txt'
-		    sh 'python3 -m py_compile app.py'
-		}
-	    }
-	}
-
-        stage('Archive Build') {
-            steps {
-                archiveArtifacts artifacts: 'frontend/build/**', fingerprint: true
             }
         }
     }
 }
+
