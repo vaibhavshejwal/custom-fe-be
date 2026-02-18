@@ -2,9 +2,9 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB_CREDENTIALS = 'docker-creds'
-        DOCKERHUB_REPO_FRONTEND = 'vaibhavshejwal/frontend-app'
-        DOCKERHUB_REPO_BACKEND = 'vaibhavshejwal/backend-app'
+        DOCKER_USER = 'vaibhavshejwal'
+        FRONTEND_IMAGE = 'vaibhavshejwal/frontend-app'
+        BACKEND_IMAGE = 'vaibhavshejwal/backend-app'
     }
 
     stages {
@@ -18,7 +18,9 @@ pipeline {
         stage('Build Frontend Image') {
             steps {
                 script {
-                    docker.build("${DOCKERHUB_REPO_FRONTEND}:${BUILD_NUMBER}", "./frontend")
+                    sh """
+                        docker build -t ${FRONTEND_IMAGE}:${BUILD_NUMBER} ./frontend
+                    """
                 }
             }
         }
@@ -26,20 +28,38 @@ pipeline {
         stage('Build Backend Image') {
             steps {
                 script {
-                    docker.build("${DOCKERHUB_REPO_BACKEND}:${BUILD_NUMBER}", "./backend")
+                    sh """
+                        docker build -t ${BACKEND_IMAGE}:${BUILD_NUMBER} ./backend
+                    """
                 }
             }
         }
 
-        stage('Push Images') {
+        stage('Docker Login & Push') {
             steps {
-                script {
-                    docker.withRegistry('https://index.docker.io/v1/', DOCKERHUB_CREDENTIALS) {
-                        docker.image("${DOCKERHUB_REPO_FRONTEND}:${BUILD_NUMBER}").push()
-                        docker.image("${DOCKERHUB_REPO_BACKEND}:${BUILD_NUMBER}").push()
-                    }
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-creds',
+                    usernameVariable: 'DOCKER_USERNAME',
+                    passwordVariable: 'DOCKER_PASSWORD'
+                )]) {
+
+                    sh """
+                        echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
+                        docker push ${FRONTEND_IMAGE}:${BUILD_NUMBER}
+                        docker push ${BACKEND_IMAGE}:${BUILD_NUMBER}
+                        docker logout
+                    """
                 }
             }
+        }
+    }
+
+    post {
+        success {
+            echo "Images pushed successfully with tag ${BUILD_NUMBER}"
+        }
+        failure {
+            echo "Build failed. Check logs."
         }
     }
 }
