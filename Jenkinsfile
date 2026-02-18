@@ -34,7 +34,7 @@ pipeline {
         stage('Push Images') {
             steps {
                 script {
-                    docker.withRegistry('', DOCKERHUB_CREDENTIALS) {
+                    docker.withRegistry('https://index.docker.io/v1/', DOCKERHUB_CREDENTIALS) {
                         docker.image("${DOCKERHUB_REPO_FRONTEND}:${BUILD_NUMBER}").push()
                         docker.image("${DOCKERHUB_REPO_BACKEND}:${BUILD_NUMBER}").push()
                     }
