@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB_CREDENTIALS = 'dockerhub-creds'
+        DOCKERHUB_CREDENTIALS = 'docker-creds'
         DOCKERHUB_REPO_FRONTEND = 'vaibhavshejwal/frontend-app'
         DOCKERHUB_REPO_BACKEND = 'vaibhavshejwal/backend-app'
     }
