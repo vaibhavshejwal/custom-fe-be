@@ -3,8 +3,8 @@ pipeline {
 
     environment {
         DOCKER_USER = 'vaibhavshejwal'
-        FRONTEND_IMAGE = 'vaibhavshejwal/frontend-app'
-        BACKEND_IMAGE = 'vaibhavshejwal/backend-app'
+        FRONTEND_IMAGE = 'vaibhavshejwaldocker/frontend-app'
+        BACKEND_IMAGE = 'vaibhavshejwaldocker/backend-app'
     }
 
     stages {
